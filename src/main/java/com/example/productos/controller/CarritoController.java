@@ -1,10 +1,11 @@
 package com.example.productos.controller;
 
-/* 
-import com.example.productos.service.CarritoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import com.example.productos.dto.CarritoRequest;
+import com.example.productos.service.CarritoService;
 
 import java.util.Map;
 
@@ -16,42 +17,27 @@ public class CarritoController {
     private CarritoService carritoService;
     
     @PostMapping("/agregar")
-    public ResponseEntity<String> agregarAlCarrito(@RequestParam String usuarioId, 
-                                                   @RequestParam String codigoProducto, 
-                                                   @RequestParam int cantidad) {
-        try {
-            carritoService.agregarProducto(usuarioId, codigoProducto, cantidad);
-            return ResponseEntity.ok("Producto agregado al carrito");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
-        }
+    public ResponseEntity<String> crearCarrito(@RequestBody CarritoRequest request) {
+        carritoService.guardarCarrito(request.getClienteId(), request.getProductos());
+        return ResponseEntity.ok("Carrito creado correctamente");
     }
     
-    @GetMapping("/{usuarioId}")
-    public ResponseEntity<Map<String, Integer>> obtenerCarrito(@PathVariable String usuarioId) {
-        Map<String, Integer> carrito = carritoService.obtenerCarrito(usuarioId);
+    @GetMapping("/{clienteId}")
+    public ResponseEntity<Map<String, String>> obtenerCarrito(@PathVariable String clienteId) {
+        Map<String, String> carrito = carritoService.obtenerCarrito(clienteId);
         return ResponseEntity.ok(carrito);
     }
-    
-    @DeleteMapping("/{usuarioId}/producto/{codigoProducto}")
-    public ResponseEntity<String> eliminarDelCarrito(@PathVariable String usuarioId, 
+
+    @DeleteMapping("/{clienteId}/producto/{codigoProducto}")
+    public ResponseEntity<String> eliminarDelCarrito(@PathVariable String clienteId,
                                                      @PathVariable String codigoProducto) {
-        carritoService.eliminarProducto(usuarioId, codigoProducto);
+        carritoService.eliminarProducto(clienteId, codigoProducto);
         return ResponseEntity.ok("Producto eliminado del carrito");
     }
-    
-    @DeleteMapping("/{usuarioId}")
-    public ResponseEntity<String> limpiarCarrito(@PathVariable String usuarioId) {
-        carritoService.limpiarCarrito(usuarioId);
+
+    @DeleteMapping("/{clienteId}")
+    public ResponseEntity<String> limpiarCarrito(@PathVariable String clienteId) {
+        carritoService.limpiarCarrito(clienteId);
         return ResponseEntity.ok("Carrito limpiado");
     }
-    
-    @PutMapping("/{usuarioId}/producto/{codigoProducto}")
-    public ResponseEntity<String> actualizarCantidad(@PathVariable String usuarioId,
-                                                     @PathVariable String codigoProducto,
-                                                     @RequestParam int cantidad) {
-        carritoService.actualizarCantidad(usuarioId, codigoProducto, cantidad);
-        return ResponseEntity.ok("Cantidad actualizada");
-    }
 }
-*/

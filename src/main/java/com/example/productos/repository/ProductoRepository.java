@@ -1,4 +1,5 @@
 
+
 package com.example.productos.repository;
 
 import com.example.productos.model.Producto;
@@ -6,5 +7,22 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.Optional;
 
 public interface ProductoRepository extends MongoRepository<Producto, String> {
+
+    // Método para buscar un producto por su código (ya existente)
     Optional<Producto> findByCodigo(String codigo);
+
+    // Método para listar todos los productos (ya proporcionado por MongoRepository)
+    // List<Producto> findAll();
+
+    // Método para guardar un producto nuevo validando que no se duplique el ID
+    default Producto saveIfNotExists(Producto producto) {
+        if (existsById(producto.getId())) {
+            throw new IllegalArgumentException("El ID del producto ya existe: " + producto.getId());
+        }
+        return save(producto);
+    }
+
+    // Método para actualizar un producto por su ID (ya proporcionado por MongoRepository)
+    // Producto save(Producto producto);
+
 }

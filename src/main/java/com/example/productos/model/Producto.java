@@ -11,6 +11,7 @@ public class Producto implements Serializable {
     @Id
     private String id;
     private String codigo;
+    private String nombre;
     private String descripcion;
     private double precioUnitario;
     private int cantidadStock;
@@ -18,14 +19,22 @@ public class Producto implements Serializable {
     
     public Producto() {}
     
-    public Producto(String codigo, String descripcion, double precioUnitario, int cantidadStock, int stockMinimo) {
+    public Producto(String codigo, String nombre, String descripcion, double precioUnitario, int cantidadStock, int stockMinimo) {
         this.codigo = codigo;
+        this.nombre = nombre;
         this.descripcion = descripcion;
         this.precioUnitario = precioUnitario;
         this.cantidadStock = cantidadStock;
         this.stockMinimo = stockMinimo;
     }
     
+    // Constructor para inicializar en Redis
+    public Producto(String nombre, double precioUnitario, int cantidadStock) {
+        this.nombre = nombre;
+        this.precioUnitario = precioUnitario;
+        this.cantidadStock = cantidadStock;
+
+    }
     public boolean esBajoStock() {
         return this.cantidadStock <= this.stockMinimo;
     }
@@ -39,7 +48,16 @@ public class Producto implements Serializable {
         return id;
     }
     
-    public void setId(String id) {
+    
+    public String getNombre() {
+		return nombre;
+	}
+
+	public void setNombre(String nombre) {
+		this.nombre = nombre;
+	}
+
+	public void setId(String id) {
         this.id = id;
     }
     

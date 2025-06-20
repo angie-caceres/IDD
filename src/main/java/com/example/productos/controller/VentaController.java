@@ -1,4 +1,3 @@
-
 package com.example.productos.controller;
 
 import com.example.productos.model.Venta;
@@ -8,53 +7,47 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/ventas")
 public class VentaController {
     
     @Autowired
     private VentaService ventaService;
     
-    @PostMapping("/venta")
-    public ResponseEntity<Venta> realizarVenta(@RequestBody VentaRequest request) {
+    /**
+     * Procesa una venta desde un carrito
+     */
+    @PostMapping("/procesar/{carritoId}")
+    public ResponseEntity<?> procesarVenta(@PathVariable String carritoId,
+                                         @RequestParam String medioPago) {
         try {
-            Venta venta = ventaService.realizarVenta(
-                request.getCodigos(),
-                request.getCantidades(),
-                request.getMedioPago()
-            );
-            return ResponseEntity.ok(venta);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
+            Venta venta = ventaService.procesarVentaDesdeCarrito(carritoId, medioPago);
+            return ResponseEntity.ok(venta); //Devolver total ???
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body("Error al procesar venta: " + e.getMessage());
         }
     }
     
-    public static class VentaRequest {
-        private String[] codigos;
-        private int[] cantidades;
-        private String medioPago;
-        
-        public String[] getCodigos() {
-            return codigos;
+    
+   
+    
+    /**
+     * Obtiene una venta específica por ID
+     */
+    @GetMapping("/{ventaId}")
+    public ResponseEntity<Venta> obtenerVenta(@PathVariable String ventaId) {
+        Venta venta = ventaService.obtenerVenta(ventaId);
+        if (venta != null) {
+            return ResponseEntity.ok(venta);
         }
-        
-        public void setCodigos(String[] codigos) {
-            this.codigos = codigos;
-        }
-        
-        public int[] getCantidades() {
-            return cantidades;
-        }
-        
-        public void setCantidades(int[] cantidades) {
-            this.cantidades = cantidades;
-        }
-        
-        public String getMedioPago() {
-            return medioPago;
-        }
-        
-        public void setMedioPago(String medioPago) {
-            this.medioPago = medioPago;
-        }
+        return ResponseEntity.notFound().build();
+    }
+    
+    /**
+     * Lista todas las ventas
+     */
+    @GetMapping
+    public ResponseEntity<Iterable<Venta>> listarVentas() {
+        Iterable<Venta> ventas = ventaService.listarVentas();
+        return ResponseEntity.ok(ventas);
     }
 }

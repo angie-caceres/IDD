@@ -61,4 +61,6 @@ public class Venta {
     public double getTotal() {
         return total;
     }
+
+	
 }

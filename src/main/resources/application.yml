@@ -3,8 +3,10 @@ spring:
   data:
     mongodb:
       uri: mongodb://localhost:27017/productosdb
-    redis:
-      host: localhost
-      port: 6379
+  redis:
+    host: localhost
+    port: 6379
+    password: 8mlumk
 server:
   port: 8080
+
