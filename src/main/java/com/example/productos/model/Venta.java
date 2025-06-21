@@ -26,9 +26,11 @@ public class Venta {
         this.fecha = new Date();
     }
     
-    public void agregarProducto(Producto producto, int cantidad) {
-        lineasVenta.add(new LineaVenta(producto, cantidad));
+    public void agregarProducto(String codigo, String nombre, double precioUnitario, int cantidad) {
+        LineaVenta linea = new LineaVenta(codigo, nombre, precioUnitario, cantidad);
+        this.lineasVenta.add(linea);
     }
+
     
     public double calcularTotal() {
         return lineasVenta.stream().mapToDouble(LineaVenta::calcularSubtotal).sum();

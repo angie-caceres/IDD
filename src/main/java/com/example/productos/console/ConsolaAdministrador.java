@@ -42,27 +42,34 @@ public class ConsolaAdministrador {
 
             switch (opcion) {
                 case "1":
-                    System.out.println("\nListando usuarios...");//buscan en mongo
-                    List<UsuarioResponse> usuarios = usuarioService.listarUsuarios();
+                    System.out.println("\n¿Qué usuarios desea ver?");
+                    System.out.println("1. Todos");
+                    System.out.println("2. Solo administradores");
+                    System.out.println("3. Solo vendedores");
+                    System.out.print("Opción: ");
+                    String subOpcion = scanner.nextLine();
+
+                    List<UsuarioResponse> usuarios = switch (subOpcion) {
+                        case "2" -> usuarioService.listarUsuariosPorPerfil("admin");
+                        case "3" -> usuarioService.listarUsuariosPorPerfil("vendedor");
+                        default  -> usuarioService.listarUsuarios(); // "1" o cualquier otro
+                    };
 
                     if (usuarios.isEmpty()) {
-                        System.out.println("No hay usuarios registrados.");
+                        System.out.println("No se encontraron usuarios para la opción seleccionada.");
                     } else {
-                        // Encabezado de tabla
-                    	System.out.println("┌────────────────────────────┬───────────────┬────────────────────────────┬───────────────┐");
+                        System.out.println("┌────────────────────────────┬───────────────┬────────────────────────────┬───────────────┐");
                         System.out.printf("│ %-26s │ %-13s │ %-26s │ %-13s │%n", "ID", "Nombre", "Email", "Perfil");
                         System.out.println("├────────────────────────────┼───────────────┼────────────────────────────┼───────────────┤");
 
-                        // Filas
                         for (UsuarioResponse u : usuarios) {
-                        	System.out.printf("│ %-26s │ %-13s │ %-26s │ %-13s │%n",
-                                u.getId(), u.getNombre(), u.getEmail(), u.getPerfil());
+                            System.out.printf("│ %-26s │ %-13s │ %-26s │ %-13s │%n",
+                                    u.getId(), u.getNombre(), u.getEmail(), u.getPerfil());
                         }
 
-                        // Pie de tabla
                         System.out.println("└────────────────────────────┴───────────────┴────────────────────────────┴───────────────┘");
-
                     }
+
                     break;
 
                 case "2":

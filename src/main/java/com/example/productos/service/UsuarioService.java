@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 @Service
 public class UsuarioService {
 
@@ -95,9 +94,14 @@ public class UsuarioService {
 		return usuarioRepository.findByEmail(email).map(UsuarioResponse::new);
 	}
 
-	public Optional<UsuarioResponse> obtenerUsuarioPorPerfil(String perfil) {
-		return usuarioRepository.findByPerfil(perfil).map(UsuarioResponse::new);
+	
+	public List<UsuarioResponse> obtenerUsuariosPorPerfil(String perfil) {
+	    return usuarioRepository.findByPerfil(perfil)
+	            .stream()
+	            .map(UsuarioResponse::new)
+	            .collect(Collectors.toList());
 	}
+
 
 	public List<UsuarioResponse> listarUsuariosActivos() {
 		return usuarioRepository.findByActivoTrue().stream().map(UsuarioResponse::new).collect(Collectors.toList());
@@ -129,6 +133,14 @@ public class UsuarioService {
 	        return false;
 	    }
 	}
+	
+	public List<UsuarioResponse> listarUsuariosPorPerfil(String perfil) {
+		return usuarioRepository.findByPerfil(perfil)
+                .stream()
+                .map(UsuarioResponse::new)
+                .collect(Collectors.toList());
+	}
+
 
 
 	public boolean desactivarUsuario(String id) {
