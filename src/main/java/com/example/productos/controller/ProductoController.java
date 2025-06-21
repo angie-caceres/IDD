@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+import java.util.List; 
 @RestController
 @RequestMapping("/api/productos")
 public class ProductoController {
@@ -29,7 +29,20 @@ public class ProductoController {
         }
         return ResponseEntity.notFound().build();
     }
-    
+
+	/*@GetMapping("/categoria")
+	public ResponseEntity<List<Producto>> obtenerProductosPorCategoria(@RequestParam String categoria) {
+		List<Producto> productos = catalogoService.obtenerProductosPorCategoria(categoria);
+		if (productos.isEmpty()) {
+			return ResponseEntity.noContent().build();
+		}
+		return ResponseEntity.ok(productos);
+	}*/
+    @GetMapping("/categoria")
+    public List<Producto> obtenerProductosPorCategoria(@RequestParam String categoria) {
+        return catalogoService.obtenerProductosPorCategoria(categoria);
+    }
+
     @PostMapping
     public ResponseEntity<Producto> crearProducto(@RequestBody Producto producto) {
         Producto productoGuardado = catalogoService.guardarProducto(producto);

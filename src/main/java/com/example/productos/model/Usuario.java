@@ -15,7 +15,7 @@ public class Usuario implements Serializable {
     
     @Indexed(unique = true)
     private String email;
-    
+    private String perfil; // "administrador" o "vendedor"
     private String nombre;
     private String contraseña;
     private Date fechaRegistro;
@@ -38,7 +38,15 @@ public class Usuario implements Serializable {
         return id;
     }
 
-    public void setId(String id) {
+    public String getPerfil() {
+		return perfil;
+	}
+
+	public void setPerfil(String perfil) {
+		this.perfil = perfil;
+	}
+
+	public void setId(String id) {
         this.id = id;
     }
 

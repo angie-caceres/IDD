@@ -24,7 +24,7 @@ public class CarritoService {
     public CarritoService(RedisTemplate<String, Object> redisTemplate) {
         this.redisTemplate = redisTemplate;
         this.hashOperations = redisTemplate.opsForHash();
-        this.catalogoService = new CatalogoService(); // Asegurate de usar @Autowired si es necesario
+        this.catalogoService = new CatalogoService(); 
     }
 
     // Guarda el carrito como Strings (convierte los Integer a String)

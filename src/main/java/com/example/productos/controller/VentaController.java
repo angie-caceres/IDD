@@ -21,7 +21,7 @@ public class VentaController {
                                          @RequestParam String medioPago) {
         try {
             Venta venta = ventaService.procesarVentaDesdeCarrito(carritoId, medioPago);
-            return ResponseEntity.ok(venta); //Devolver total ???
+            return ResponseEntity.ok(venta); 
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body("Error al procesar venta: " + e.getMessage());
         }

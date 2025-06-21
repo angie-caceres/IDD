@@ -3,6 +3,8 @@
 package com.example.productos.repository;
 
 import com.example.productos.model.Producto;
+import java.util.List;
+
 import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.Optional;
 
@@ -21,6 +23,13 @@ public interface ProductoRepository extends MongoRepository<Producto, String> {
         }
         return save(producto);
     }
+
+
+    //List<Producto> findByCategoria(String categoria);
+
+	List<Producto> findByCategoriaIgnoreCase(String categoria);
+
+	
 
     // Método para actualizar un producto por su ID (ya proporcionado por MongoRepository)
     // Producto save(Producto producto);

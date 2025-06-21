@@ -1,5 +1,6 @@
 package com.example.productos.repository;
 
+import com.example.productos.dto.UsuarioResponse;
 import com.example.productos.model.Usuario;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.Optional;
@@ -12,4 +13,6 @@ public interface UsuarioRepository extends MongoRepository<Usuario, String> {
     List<Usuario> findByActivoTrue();
     
     boolean existsByEmail(String email);
+
+	Optional<Usuario> findByPerfil(String perfil);
 }

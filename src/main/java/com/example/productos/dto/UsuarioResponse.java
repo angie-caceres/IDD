@@ -8,6 +8,7 @@ public class UsuarioResponse {
     private String id;
     private String nombre;
     private String email;
+    private String perfil; // "administrador" o "vendedor"
     private Date fechaRegistro;
     private boolean activo;
 
@@ -17,6 +18,7 @@ public class UsuarioResponse {
         this.id = usuario.getId();
         this.nombre = usuario.getNombre();
         this.email = usuario.getEmail();
+        this.perfil = usuario.getPerfil(); // Asignar el perfil del usuario
         this.fechaRegistro = usuario.getFechaRegistro();
         this.activo = usuario.isActivo();
     }
@@ -30,7 +32,15 @@ public class UsuarioResponse {
         this.id = id;
     }
 
-    public String getNombre() {
+    public String getPerfil() {
+		return perfil;
+	}
+
+	public void setPerfil(String perfil) {
+		this.perfil = perfil;
+	}
+
+	public String getNombre() {
         return nombre;
     }
 

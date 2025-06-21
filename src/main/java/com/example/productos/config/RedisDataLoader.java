@@ -89,6 +89,7 @@ public class RedisDataLoader {
         for (Producto producto : productos) {
             Map<String, Object> productoHash = new HashMap<>();
             productoHash.put("nombre", producto.getNombre());
+            productoHash.put("categoria", producto.getCategoria());
 
             // ✅ Convertir valores numéricos a texto
             productoHash.put("precioUnitario", String.valueOf(producto.getPrecioUnitario()));

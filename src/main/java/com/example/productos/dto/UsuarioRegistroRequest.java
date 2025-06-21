@@ -5,13 +5,15 @@ public class UsuarioRegistroRequest {
     private String nombre;
     private String email;
     private String contraseña;
+    private String perfil;
 
     public UsuarioRegistroRequest() {}
 
-    public UsuarioRegistroRequest(String nombre, String email, String contraseña) {
+    public UsuarioRegistroRequest(String nombre, String email, String contraseña, String perfil) {
         this.nombre = nombre;
         this.email = email;
         this.contraseña = contraseña;
+        this.perfil = perfil;
     }
 
     // Getters y Setters
@@ -19,7 +21,15 @@ public class UsuarioRegistroRequest {
         return nombre;
     }
 
-    public void setNombre(String nombre) {
+    public String getPerfil() {
+		return perfil;
+	}
+
+	public void setPerfil(String perfil) {
+		this.perfil = perfil;
+	}
+
+	public void setNombre(String nombre) {
         this.nombre = nombre;
     }
 
