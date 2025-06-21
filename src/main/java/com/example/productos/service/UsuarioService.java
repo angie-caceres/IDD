@@ -46,6 +46,12 @@ public class UsuarioService {
 
 		// Guardar en MongoDB
 		Usuario usuarioGuardado = usuarioRepository.save(usuario);
+		// 🔐 Guardar automáticamente en Redis
+		guardarUsuarioEnRedis(
+		    usuarioGuardado.getEmail(),
+		    usuarioGuardado.getContraseña(),
+		    usuarioGuardado.getPerfil()
+		);
 
 		return new UsuarioResponse(usuarioGuardado);
 	}
@@ -101,13 +107,29 @@ public class UsuarioService {
 		return usuarioRepository.findAll().stream().map(UsuarioResponse::new).collect(Collectors.toList());
 	}
 
-	public boolean validarCredenciales(String email, String contraseña) {
+	/*public boolean validarCredenciales(String email, String contraseña) {
 		Optional<Usuario> usuario = usuarioRepository.findByEmail(email);
 		if (usuario.isPresent() && usuario.get().isActivo()) {
 			return passwordEncoder.matches(contraseña, usuario.get().getContraseña());
 		}
 		return false;
+	}*/
+	public boolean validarCredenciales(String email, String contraseña) {
+	    try {
+	        String key = REDIS_USER_PREFIX + email;
+	        Object hashEnRedis = redisTemplate.opsForHash().get(key, "password");
+
+	        if (hashEnRedis == null) {
+	            return false; // Usuario no existe en Redis
+	        }
+
+	        return passwordEncoder.matches(contraseña, hashEnRedis.toString());
+	    } catch (Exception e) {
+	        System.err.println("Error validando credenciales en Redis: " + e.getMessage());
+	        return false;
+	    }
 	}
+
 
 	public boolean desactivarUsuario(String id) {
 		Optional<Usuario> usuario = usuarioRepository.findById(id);
@@ -119,32 +141,103 @@ public class UsuarioService {
 		return false;
 	}
 
-	public UsuarioResponse actualizarUsuario(String id, UsuarioRegistroRequest request) {
-		// Validaciones manuales
-		validarDatosUsuario(request);
-
-		Optional<Usuario> usuarioOpt = usuarioRepository.findById(id);
-		if (usuarioOpt.isPresent()) {
-			Usuario usuario = usuarioOpt.get();
-
-			// Verificar si el nuevo email ya existe (si es diferente al actual)
-			if (!usuario.getEmail().equals(request.getEmail()) && usuarioRepository.existsByEmail(request.getEmail())) {
-				throw new RuntimeException("El email ya está registrado");
-			}
-
-			usuario.setNombre(request.getNombre());
-			usuario.setEmail(request.getEmail());
-
-			// Solo actualizar contraseña si se proporciona una nueva
-			if (request.getContraseña() != null && !request.getContraseña().isEmpty()) {
-				usuario.setContraseña(passwordEncoder.encode(request.getContraseña()));
-			}
-
-			Usuario usuarioActualizado = usuarioRepository.save(usuario);
-			return new UsuarioResponse(usuarioActualizado);
-		}
-		return null;
+	
+	public boolean actualizarNombre(String id, String nuevoNombre) {
+	    Optional<Usuario> usuarioOpt = usuarioRepository.findById(id);
+	    if (usuarioOpt.isPresent() && nuevoNombre != null && !nuevoNombre.trim().isEmpty()) {
+	        Usuario usuario = usuarioOpt.get();
+	        usuario.setNombre(nuevoNombre.trim());
+	        usuarioRepository.save(usuario);
+	        return true;
+	    }
+	    return false;
 	}
+	
+	public boolean actualizarEmail(String id, String nuevoEmail) {
+	    if (nuevoEmail == null || !isValidEmail(nuevoEmail)) {
+	        throw new RuntimeException("Email inválido");
+	    }
+
+	    Optional<Usuario> usuarioOpt = usuarioRepository.findById(id);
+	    if (usuarioOpt.isPresent()) {
+	        Usuario usuario = usuarioOpt.get();
+
+	        // Si es el mismo email que ya tenía
+	        if (usuario.getEmail().equalsIgnoreCase(nuevoEmail.trim())) {
+	            throw new RuntimeException("El nuevo email es igual al actual");
+	        }
+
+	        // Verifica si el nuevo email ya lo tiene otro usuario
+	        if (usuarioRepository.existsByEmail(nuevoEmail)) {
+	            throw new RuntimeException("El email ya está registrado por otro usuario");
+	        }
+
+	        usuario.setEmail(nuevoEmail.trim());
+	        usuarioRepository.save(usuario);
+	        return true;
+	    }
+
+	    return false;
+	}
+
+	public boolean actualizarContraseña(String id, String nuevaContraseña) {
+	    if (nuevaContraseña == null || nuevaContraseña.length() < 6) {
+	        throw new RuntimeException("La contraseña debe tener al menos 6 caracteres");
+	    }
+
+	    Optional<Usuario> usuarioOpt = usuarioRepository.findById(id);
+	    if (usuarioOpt.isPresent()) {
+	        Usuario usuario = usuarioOpt.get();
+	        usuario.setContraseña(passwordEncoder.encode(nuevaContraseña));
+	        usuarioRepository.save(usuario);
+	        return true;
+	    }
+	    return false;
+	}
+	
+	public boolean actualizarPerfil(String id, String nuevoPerfil) {
+	    if (nuevoPerfil == null || nuevoPerfil.trim().isEmpty()) {
+	        throw new RuntimeException("El perfil no puede estar vacío");
+	    }
+
+	    Optional<Usuario> usuarioOpt = usuarioRepository.findById(id);
+	    if (usuarioOpt.isPresent()) {
+	        Usuario usuario = usuarioOpt.get();
+	        usuario.setPerfil(nuevoPerfil.trim());
+	        usuarioRepository.save(usuario);
+	        return true;
+	    }
+	    return false;
+	}
+
+
+	public boolean eliminarUsuarioPorEmail(String email) {
+	    Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
+	    if (usuarioOpt.isPresent()) {
+	        Usuario usuario = usuarioOpt.get();
+	        
+	        // Eliminar de MongoDB
+	        usuarioRepository.delete(usuario);
+	        
+	        // Eliminar de Redis
+	        eliminarUsuarioDeRedis(email);
+	        
+	        return true;
+	    }
+	    return false;
+	}
+	
+	public boolean verificarContraseñaActual(String email, String contraseñaPlana) {
+	    String key = REDIS_USER_PREFIX + email;
+	    Object hash = redisTemplate.opsForHash().get(key, "password");
+	    if (hash != null) {
+	        return passwordEncoder.matches(contraseñaPlana, hash.toString());
+	    }
+	    return false;
+	}
+
+
+
 
 // Métodos para Redis
 
@@ -184,16 +277,7 @@ public class UsuarioService {
 		}
 	}
 
-	/**
-	 * Guarda un usuario en Redis con email como clave y contraseña como valor
-	 */
-	/*
-	 * private void guardarUsuarioEnRedis(String email, String contraseñaEncriptada,
-	 * String perfil) { try { String key = REDIS_USER_PREFIX + email;
-	 * redisTemplate.opsForValue().set(key, contraseñaEncriptada); } catch
-	 * (Exception e) { System.err.println("Error al guardar usuario en Redis: " +
-	 * e.getMessage()); } }
-	 */
+	
 	private void guardarUsuarioEnRedis(String email, String contraseñaEncriptada, String perfil) {
 		try {
 			String key = REDIS_USER_PREFIX + email;
@@ -254,5 +338,38 @@ public class UsuarioService {
 			System.err.println("Error al verificar usuario en Redis: " + e.getMessage());
 			return false;
 		}
+	}
+	
+	
+	public void actualizarEmailEnRedis(String emailViejo, String emailNuevo) {
+	    try {
+	        String oldKey = REDIS_USER_PREFIX + emailViejo;
+	        Map<Object, Object> datos = redisTemplate.opsForHash().entries(oldKey);
+	        redisTemplate.delete(oldKey);
+
+	        String newKey = REDIS_USER_PREFIX + emailNuevo;
+	        redisTemplate.opsForHash().putAll(newKey, datos);
+	    } catch (Exception e) {
+	        System.err.println("Error al actualizar el email en Redis: " + e.getMessage());
+	    }
+	}
+
+	public void actualizarPasswordEnRedis(String email, String nuevaPassword) {
+	    try {
+	        String key = REDIS_USER_PREFIX + email;
+	        String hash = passwordEncoder.encode(nuevaPassword);
+	        redisTemplate.opsForHash().put(key, "password", hash);
+	    } catch (Exception e) {
+	        System.err.println("Error al actualizar la contraseña en Redis: " + e.getMessage());
+	    }
+	}
+
+	public void actualizarPerfilEnRedis(String email, String nuevoPerfil) {
+	    try {
+	        String key = REDIS_USER_PREFIX + email;
+	        redisTemplate.opsForHash().put(key, "perfil", nuevoPerfil);
+	    } catch (Exception e) {
+	        System.err.println("Error al actualizar el perfil en Redis: " + e.getMessage());
+	    }
 	}
 }

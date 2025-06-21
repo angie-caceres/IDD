@@ -52,7 +52,7 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarios);
     }
 
-    @PutMapping("/{id}")
+    /*@PutMapping("/{id}")
     public ResponseEntity<?> actualizarUsuario(@PathVariable String id, 
                                                @RequestBody UsuarioRegistroRequest request) {
         try {
@@ -64,7 +64,7 @@ public class UsuarioController {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
-    }
+    }*/
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> desactivarUsuario(@PathVariable String id) {
