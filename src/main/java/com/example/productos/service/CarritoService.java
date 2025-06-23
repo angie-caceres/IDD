@@ -34,7 +34,7 @@ public class CarritoService {
         );
     }
 
-    // 👇 Ahora devuelve Map<String, String>
+    //  Ahora devuelve Map<String, String>
     public Map<String, String> obtenerCarrito(String carritoId) {
         return hashOperations.entries(carritoId);
     }
@@ -72,7 +72,7 @@ public class CarritoService {
             Object stockObj = redisTemplate.opsForHash().get(codigoProducto, "cantidadStock");
 
             if (stockObj == null) {
-                System.out.println("DEBUG: Producto no encontrado en Redis: " + codigoProducto);
+                System.out.println("DEBUG: Producto no encontrado: " + codigoProducto);
                 return false;
             }
 

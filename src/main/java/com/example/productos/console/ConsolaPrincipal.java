@@ -12,9 +12,11 @@ public class ConsolaPrincipal {
 	
 	@Autowired
     private ConsolaAdministrador consolaAdministrador;
+	
+	@Autowired
+	private ConsolaVendedor consolaVendedor;
 
-
-
+	
 public void iniciar() {
     Scanner scanner = new Scanner(System.in);
     String opcion;
@@ -43,8 +45,8 @@ public void iniciar() {
                 System.out.print("Ingrese contraseña: ");
                 String contrasenaIngresada = scanner.nextLine();
                 System.out.println("\nIniciando sesión...");
-                System.out.println("Usuario: " + usuarioIngresado);
-                System.out.println("Contraseña: " + contrasenaIngresada);
+               // System.out.println("Usuario: " + usuarioIngresado);
+              //  System.out.println("Contraseña: " + contrasenaIngresada);
 
                 if (usuarioService.validarCredenciales(usuarioIngresado, contrasenaIngresada)) {
                     credencialesValidas = true;
@@ -55,8 +57,10 @@ public void iniciar() {
                             consolaAdministrador.iniciar();
                             break;
                         case "vendedor":
-                        	System.out.println("\n========================================================  BIENVENIDO VENDEDOR  ========================================================");
-                            break;
+                        	System.out.println("\n=======================================================  BIENVENIDO VENDEDOR  =======================================================");
+                        	consolaVendedor.iniciar(usuarioIngresado);
+
+                        	break;
                         default:
                             System.out.println("Perfil desconocido");
                     }

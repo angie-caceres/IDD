@@ -1,7 +1,7 @@
 
 
 package com.example.productos.repository;
-
+import org.springframework.data.mongodb.repository.Query;
 import com.example.productos.model.Producto;
 import java.util.List;
 
@@ -29,7 +29,8 @@ public interface ProductoRepository extends MongoRepository<Producto, String> {
 
 	List<Producto> findByCategoriaIgnoreCase(String categoria);
 
-	
+	@Query(value = "{ 'codigo': ?0 }", delete = true)
+    void deleteByCodigo(String codigo);
 
     // Método para actualizar un producto por su ID (ya proporcionado por MongoRepository)
     // Producto save(Producto producto);

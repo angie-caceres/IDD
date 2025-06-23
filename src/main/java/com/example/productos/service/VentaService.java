@@ -1,5 +1,4 @@
 
-
 package com.example.productos.service;
 
 import com.example.productos.model.Producto;
@@ -10,9 +9,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class VentaService {
@@ -48,11 +45,28 @@ public class VentaService {
             throw new RuntimeException("El carrito está vacío");
         }
 
-        if (!carritoService.verificarStockCarrito(carritoId)) {
-            throw new RuntimeException("Stock insuficiente para algunos productos");
+        // Verificar stock de cada producto manualmente para dar mensaje específico
+        List<String> productosSinStock = new ArrayList<>();
+        for (Map.Entry<String, Integer> item : productosCarrito.entrySet()) {
+            String codigoProducto = item.getKey();
+            int cantidad = item.getValue();
+
+            Object stockObj = redisTemplate.opsForHash().get(codigoProducto, "cantidadStock");
+            if (stockObj == null) {
+                productosSinStock.add(codigoProducto);
+            } else {
+                int stockDisponible = Integer.parseInt(stockObj.toString());
+                if (stockDisponible < cantidad) {
+                    productosSinStock.add(codigoProducto);
+                }
+            }
         }
 
-        Venta venta = new Venta(medioPago);
+        if (!productosSinStock.isEmpty()) {
+            throw new RuntimeException("No hay suficiente stock para los siguientes productos: " + String.join(", ", productosSinStock));
+        }
+
+        Venta venta = new Venta(medioPago, carritoId);
 
         for (Map.Entry<String, Integer> item : productosCarrito.entrySet()) {
             String codigoProducto = item.getKey();
@@ -64,22 +78,21 @@ public class VentaService {
             }
 
             if (producto.getCantidadStock() < cantidad) {
-                throw new RuntimeException("Stock insuficiente para: " + producto.getDescripcion());
+                throw new RuntimeException("Stock insuficiente para: " + producto.getNombre());
             }
 
             producto.actualizarStock(-cantidad);
             catalogoService.actualizarProducto(producto);
 
-            // ✅ CORREGIDO: guardar el stock como String en Redis
+            // CORREGIDO: guardar el stock como String en Redis
             redisTemplate.opsForHash().put(codigoProducto, "cantidadStock", String.valueOf(producto.getCantidadStock()));
 
             venta.agregarProducto(
-            	    producto.getCodigo(),
-            	    producto.getNombre(),
-            	    producto.getPrecioUnitario(),
-            	    cantidad
-            	);
-
+                producto.getCodigo(),
+                producto.getNombre(),
+                producto.getPrecioUnitario(),
+                cantidad
+            );
         }
 
         venta.finalizarVenta();
@@ -97,6 +110,12 @@ public class VentaService {
     public Iterable<Venta> listarVentas() {
         return ventaRepository.findAll();
     }
+    
+    public List<Venta> listarVentasPorVendedor(String emailVendedor) {
+        return ventaRepository.findByEmailVendedor(emailVendedor);
+    }
+    
+    
+    
+  
 }
-
-

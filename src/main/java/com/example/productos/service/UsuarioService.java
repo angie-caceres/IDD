@@ -153,6 +153,20 @@ public class UsuarioService {
 		return false;
 	}
 
+public boolean desactivarUsuarioPorEmail(String email) {
+    Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
+    if (usuarioOpt.isPresent()) {
+        Usuario usuario = usuarioOpt.get();
+        usuario.setActivo(false);
+        usuarioRepository.save(usuario);
+     // Eliminar el usuario de Redis
+        eliminarUsuarioDeRedis(email);
+        return true;
+    }
+    return false;
+}
+
+
 	
 	public boolean actualizarNombre(String id, String nuevoNombre) {
 	    Optional<Usuario> usuarioOpt = usuarioRepository.findById(id);

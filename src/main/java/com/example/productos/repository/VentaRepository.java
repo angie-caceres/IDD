@@ -1,15 +1,11 @@
 package com.example.productos.repository;
 
 import com.example.productos.model.Venta;
-
-//import java.sql.Date;
-
 import org.springframework.data.mongodb.repository.MongoRepository;
+import java.util.List;
 
 public interface VentaRepository extends MongoRepository<Venta, String> {
-	// Aquí puedes definir métodos adicionales si es necesario, por ejemplo:
-	//List<Venta> findByUsuarioId(String usuarioId);
-	
-	//List<Venta> findByFechaBetween(Date startDate, Date endDate);
-	
+    
+	List<Venta> findByEmailVendedor(String emailVendedor);
+ // permite buscar ventas por email del vendedor
 }

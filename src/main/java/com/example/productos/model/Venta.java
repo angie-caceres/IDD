@@ -15,14 +15,16 @@ public class Venta {
     private List<LineaVenta> lineasVenta = new ArrayList<>();
     private String medioPago;
     private Date fecha;
+    private String emailVendedor;
     private double total;
     
     public Venta() {
         this.fecha = new Date();
     }
     
-    public Venta(String medioPago) {
+    public Venta(String medioPago, String emailVendedor) {
         this.medioPago = medioPago;
+        this.emailVendedor = emailVendedor;
         this.fecha = new Date();
     }
     
@@ -63,6 +65,11 @@ public class Venta {
     public double getTotal() {
         return total;
     }
+
+	public String getVendedor() {
+		// TODO Auto-generated method stub
+		return emailVendedor;
+	}
 
 	
 }
